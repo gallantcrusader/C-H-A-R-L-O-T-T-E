@@ -26,13 +26,11 @@ def print_banner():
     PURPLE = "\033[35m"
     RESET = "\033[0m"
     skull_banner = f"""{PURPLE}
-            ☠ ╔═══════════════╗
-            ☠ ║   CHARLOTTE   ║
-            ☠ ╚═══════════════╝
-        🔮 Predict | Triage | Own 🔮
-
-{PURPLE}  The Cybersecurity Assistant  {RESET}
-{PURPLE}  Version: 0.1.0  {RESET}   
+    ☠ ╔═══════════════╗
+    ☠ ║   CHARLOTTE   ║
+    ☠ ╚═══════════════╝
+🔮 Predict | Triage | Own 🔮
+    {PURPLE}  Version: 0.1.0  {RESET}   
 {RESET}"""
     print(skull_banner)
 
