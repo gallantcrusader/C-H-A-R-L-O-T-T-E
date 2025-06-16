@@ -7,6 +7,7 @@
 import importlib
 import os
 import traceback
+
 import yaml
 from typing import Dict, List
 
@@ -16,14 +17,20 @@ from typing import Dict, List
 # ******************************************************************************************
 
 PLUGIN_REGISTRY = {
-    "reverse_engineering": ("re", "symbolic_trace"),         # 🧠 Binary symbolic tracer
-    "binary_strings": ("re", "bin_strings"),                 # 🔍 Strings & entropy scan
-    "web_recon": ("recon", "subdomain_enum"),                # 🌐 Subdomain discovery
-    "port_scan": ("recon", "nmap_plugin"),                   # 📡 Basic port scan
-    "xss_scan": ("vulnscan", "xss_detector"),                # 🧼 Cross-site scripting test
-    "sql_injection": ("vulnscan", "sql_injection"),          # 💉 SQLi vulnerability test
-    "exploit_generation": ("agents", "exploit_agent"),       # 🚨 LLM-generated exploit suggestions
-    "servicenow_setup": ("servicenow", "servicenow_setup"),  # 🛎️ Initial ServiceNow config wizard
+    "reverse_engineering": ("re", "symbolic_trace"),  # 🧠 Binary symbolic tracer
+    "binary_strings": ("re", "bin_strings"),  # 🔍 Strings & entropy scan
+    "web_recon": ("recon", "subdomain_enum"),  # 🌐 Subdomain discovery
+    "port_scan": ("recon", "nmap_plugin"),  # 📡 Basic port scan
+    "xss_scan": ("vulnscan", "xss_detector"),  # 🧼 Cross-site scripting test
+    "sql_injection": ("vulnscan", "sql_injection"),  # 💉 SQLi vulnerability test
+    "exploit_generation": (
+        "agents",
+        "exploit_agent",
+    ),  # 🚨 LLM-generated exploit suggestions
+    "servicenow_setup": (
+        "servicenow",
+        "servicenow_setup",
+    ),  # 🛎️ Initial ServiceNow config wizard
 }
 
 
@@ -31,6 +38,7 @@ PLUGIN_REGISTRY = {
 # Static Plugin Executor
 # Dynamically loads and executes the requested plugin module from PLUGIN_REGISTRY
 # ******************************************************************************************
+
 
 def run_plugin(task: str, args: Dict) -> str:
     """
@@ -57,12 +65,14 @@ def run_plugin(task: str, args: Dict) -> str:
     except Exception as e:
         return f"[PLUGIN ERROR]: {str(e)}\n{traceback.format_exc()}"
 
+
 # ******************************************************************************************
 # Dynamic Plugin Discovery (plugin.yaml-based)
 # Supports CLI-accessible or auto-triggered extensions
 # ******************************************************************************************
 
 PLUGIN_DIR = "plugins"
+
 
 def discover_plugins() -> List[Dict]:
     """Scans plugin directories for plugin.yaml files and loads metadata."""
@@ -81,6 +91,7 @@ def discover_plugins() -> List[Dict]:
                 print(f"[!] Failed to load plugin.yaml from {folder}: {e}")
     return plugins
 
+
 def run_dynamic_plugin(entry_point: str):
     """Runs a plugin from entry_point = 'module.submodule:function'."""
     try:
@@ -92,9 +103,11 @@ def run_dynamic_plugin(entry_point: str):
         print(f"[!] Failed to execute plugin: {e}")
         traceback.print_exc()
 
+
 def list_plugins() -> List[str]:
     """Returns a list of plugin labels and descriptions."""
     return [f"{p.get('label')} :: {p.get('description')}" for p in discover_plugins()]
+
 
 def select_plugin_by_label(label: str):
     """Finds and runs a plugin by human-friendly label."""
@@ -102,6 +115,7 @@ def select_plugin_by_label(label: str):
         if plugin.get("label") == label:
             return run_dynamic_plugin(plugin["entry_point"])
     print(f"[!] No plugin found with label: {label}")
+
 
 # ******************************************************************************************
 # Optional: CLI Test Entry Point
@@ -115,6 +129,6 @@ if __name__ == "__main__":
     print("\n🧩 Discovered Plugins:")
     for item in list_plugins():
         print(f"  - {item}")
- 
+
 # ******************************************************************************************
 # End of plugin_manager.py

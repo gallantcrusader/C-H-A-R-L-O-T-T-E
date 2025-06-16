@@ -13,15 +13,16 @@ from core.logic_modules.exploit_predictor import predict_exploitability
 from core.logic_modules.report_utils import (
     generate_markdown_report,
     generate_pdf_report,
-    generate_html_report
+    generate_html_report,
 )
-from core.report_dispatcher import dispatch_report, resend_queued_reports
+from core.report_dispatcher import dispatch_report
 
 # ServiceNow integration
 from plugins.servicenow.servicenow_client import create_incident, maybe_create_tickets
 from plugins.servicenow.servicenow_setup import configure_servicenow
 
 SERVICENOW_CONFIG_PATH = "data/servicenow_config.json"
+
 
 # ==========================================================================================
 # FUNCTION: load_findings()
@@ -61,6 +62,7 @@ def load_findings(file_path):
         print(f"[!] Failed to parse JSON: {e}")
         return []
 
+
 # ==========================================================================================
 # FUNCTION: triage_findings()
 # Applies scoring logic to all findings using triage() from triage_rules.py
@@ -92,6 +94,7 @@ def triage_findings(findings):
         enriched.append(vuln)
     return enriched
 
+
 # ==========================================================================================
 # FUNCTION: display_summary()
 # CLI summary of top N triaged findings
@@ -100,9 +103,14 @@ def display_summary(findings, limit=10):
     sorted_findings = sorted(findings, key=lambda f: f["score"], reverse=True)
     print("\n===== 🧠 TRIAGE RESULTS (Top {0}) =====".format(limit))
     for vuln in sorted_findings[:limit]:
-        print(f"- {vuln.get('id', 'N/A')}: {vuln['priority']} | {vuln['severity']} | Score: {vuln['score']}")
-        print(f"  CWE: {vuln.get('cwe', 'N/A')} | Impact: {vuln.get('impact', 'N/A')} | Exploit: {vuln.get('exploit_prediction')} ({vuln.get('confidence')})")
+        print(
+            f"- {vuln.get('id', 'N/A')}: {vuln['priority']} | {vuln['severity']} | Score: {vuln['score']}"
+        )
+        print(
+            f"  CWE: {vuln.get('cwe', 'N/A')} | Impact: {vuln.get('impact', 'N/A')} | Exploit: {vuln.get('exploit_prediction')} ({vuln.get('confidence')})"
+        )
         print()
+
 
 # ==========================================================================================
 # FUNCTION: save_results()
@@ -113,6 +121,7 @@ def save_results(findings, output_file="data/triaged_findings.json"):
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(findings, f, indent=4)
     print(f"[+] Triaged results saved to {output_file}")
+
 
 # ==========================================================================================
 # FUNCTION: run_triage_agent()
@@ -133,7 +142,13 @@ def run_triage_agent(scan_file="data/findings.json", dispatch=True):
 
     format_choice = inquirer.select(
         message="Select report output format:",
-        choices=["📄 Markdown (.md)", "🧾 PDF (.pdf)", "🌐 HTML (.html)", "♻️ Resend Queued Reports", "❌ Skip report"]
+        choices=[
+            "📄 Markdown (.md)",
+            "🧾 PDF (.pdf)",
+            "🌐 HTML (.html)",
+            # "♻️ Resend Queued Reports",
+            "❌ Skip report",
+        ],
     ).execute()
 
     report_file = None
@@ -144,9 +159,9 @@ def run_triage_agent(scan_file="data/findings.json", dispatch=True):
         report_file = generate_pdf_report(enriched_findings)
     elif format_choice.startswith("🌐"):
         report_file = generate_html_report(enriched_findings)
-    elif format_choice.startswith("♻️"):
-        resend_queued_reports()
-        return
+    # elif format_choice.startswith("♻️"):
+    #     resend_queued_reports()
+    #     return
     else:
         print("[*] Skipped report generation.")
         return
@@ -156,12 +171,13 @@ def run_triage_agent(scan_file="data/findings.json", dispatch=True):
 
     # Ask about ticket creation
     auto_ticket = inquirer.confirm(
-    message="Auto-create ServiceNow tickets for critical findings?",
-    default=True
+        message="Auto-create ServiceNow tickets for critical findings?", default=True
     ).execute()
 
     if auto_ticket:
         maybe_create_tickets(enriched_findings)
+
+
 # ==========================================================================================
 # MAIN EXECUTION BLOCK
 # ==========================================================================================
